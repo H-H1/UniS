@@ -1,11 +1,13 @@
 package wechat
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"uniS/pkg/logger"
 )
 
@@ -20,23 +22,39 @@ type Code2SessionResp struct {
 }
 
 type Client struct {
-	AppID     string
-	AppSecret string
+	AppID      string
+	AppSecret  string
+	httpClient *http.Client
 }
 
 func NewClient(appID, appSecret string) *Client {
-	return &Client{AppID: appID, AppSecret: appSecret}
+	httpClient := &http.Client{}
+
+	// 仅在本地开发时跳过 TLS 证书验证（代理/VPN 自签名证书场景）
+	// 生产环境请勿设置此变量
+	if os.Getenv("WX_SKIP_TLS_VERIFY") == "true" {
+		httpClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
+		}
+		logger.Warn("wechat", "TLS 证书验证已关闭，仅限本地开发使用", nil)
+	}
+
+	return &Client{
+		AppID:      appID,
+		AppSecret:  appSecret,
+		httpClient: httpClient,
+	}
 }
 
 func (c *Client) Code2Session(code string) (*Code2SessionResp, error) {
-	url := fmt.Sprintf(code2SessionURL, c.AppID, c.AppSecret, url.QueryEscape(code))
+	reqURL := fmt.Sprintf(code2SessionURL, c.AppID, c.AppSecret, url.QueryEscape(code))
 
 	logger.Info("wechat", "Code2Session 请求微信接口", map[string]any{
 		"appid":    c.AppID,
-		"code_len": len(code), // 不记录完整 code，避免泄露
+		"code_len": len(code),
 	})
 
-	resp, err := http.Get(url) //nolint:gosec
+	resp, err := c.httpClient.Get(reqURL) //nolint:gosec
 	if err != nil {
 		logger.Error("wechat", "HTTP 请求失败", map[string]any{
 			"appid": c.AppID,
@@ -78,7 +96,7 @@ func (c *Client) Code2Session(code string) (*Code2SessionResp, error) {
 			"appid":   c.AppID,
 			"errcode": result.ErrCode,
 			"errmsg":  result.ErrMsg,
-			"openid":  result.OpenID, // 通常为空
+			"openid":  result.OpenID,
 		})
 		return nil, fmt.Errorf("wx error %d: %s", result.ErrCode, result.ErrMsg)
 	}
