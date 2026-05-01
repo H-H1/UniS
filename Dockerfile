@@ -13,7 +13,7 @@ ADD go.mod .
 ADD go.sum .
 RUN go mod download
 COPY . .
-RUN go build -o /app/main cmd/server/.
+RUN go build -o /app/main ./cmd/server/ 
 
 FROM alpine
 
@@ -26,9 +26,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && apk add --no-cache ripgrep
 
 WORKDIR /app
-COPY --from=builder /app/main /app/main
-COPY --from=builder /app/conf /app/conf
-COPY --from=builder /app/data /app/data
-COPY --from=builder /app/skills /app/skills
+# 【关键修复】复制编译好的二进制文件
+COPY --from=builder /app/main .
 
 CMD ["./main"]
