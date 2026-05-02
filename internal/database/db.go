@@ -17,7 +17,7 @@ func NewDB(dsn string) (*gorm.DB, error) {
 	}
 
 	// 自动迁移
-	if err := db.AutoMigrate(&model.User{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}, &model.Counter{}); err != nil {
 		return nil, err
 	}
 
