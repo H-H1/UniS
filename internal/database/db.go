@@ -1,8 +1,6 @@
 package database
 
 import (
-	"uniS/internal/model"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -17,9 +15,9 @@ func NewDB(dsn string) (*gorm.DB, error) {
 	}
 
 	// 自动迁移
-	if err := db.AutoMigrate(&model.User{}, &model.Counter{}); err != nil {
-		return nil, err
-	}
+	// if err := db.AutoMigrate(&model.User{}, &model.Counter{}); err != nil {
+	// 	return nil, err
+	// }
 
 	return db, nil
 }

@@ -41,22 +41,21 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 -- ------------------------------------------------------------
 -- 游客访问计数器表
--- 每个 URL 独立一行，记录累计访问次数
+-- 每 10 分钟插入一条增量记录，总访问量 = SUM(count)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `counters` (
   `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `created_at` DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3)                       COMMENT '创建时间',
+  `created_at` DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3)                                COMMENT '创建时间',
   `updated_at` DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
 
   `url`        VARCHAR(256)    NOT NULL                               COMMENT '被统计的请求路径，如 /counter',
-  `count`      BIGINT UNSIGNED NOT NULL DEFAULT 0                     COMMENT '累计访问次数',
+  `count`      BIGINT          NOT NULL DEFAULT 0                     COMMENT '本时间段内的访问增量',
 
   PRIMARY KEY (`id`),
-  UNIQUE KEY `udx_url` (`url`)
+  KEY `idx_url` (`url`)          -- 普通索引，允许多行，用于 SUM 查询
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci
-  COMMENT='游客访问计数器表';
+  COMMENT='游客访问计数器表（每10分钟一条增量记录）';
 
--- 预插入 /counter 路径的初始行，避免首次查询返回空
-INSERT IGNORE INTO `counters` (`url`, `count`) VALUES ('/counter', 0);
+-- 查询总访问量示例：SELECT SUM(count) FROM counters WHERE url = '/counter';

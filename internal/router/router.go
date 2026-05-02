@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(authHandler *handler.AuthHandler, counterHandler *handler.CounterHandler, jwtSecret string) *gin.Engine {
+func Setup(authHandler *handler.AuthHandler, counterHandler *handler.CounterHandler, userHandler *handler.UserHandler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 
 	// 公开路由（无需登录）
@@ -28,7 +28,17 @@ func Setup(authHandler *handler.AuthHandler, counterHandler *handler.CounterHand
 				"open_id": c.GetString("open_id"),
 			})
 		})
+
+		// 用户信息
+		user := api.Group("/user")
+		{
+			user.POST("/profile", userHandler.UpdateProfile) // 更新昵称/头像URL
+			user.POST("/avatar", userHandler.UploadAvatar)   // 上传头像文件
+		}
 	}
+
+	// 静态文件服务（头像访问）
+	r.Static("/static/avatars", "./uploads/avatars")
 
 	return r
 }

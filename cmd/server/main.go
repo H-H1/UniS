@@ -25,11 +25,13 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	counterRepo := repository.NewCounterRepository(db)
 	authSvc := service.NewAuthService(wxClient, userRepo, cfg.JWT.Secret)
+	userSvc := service.NewUserService(userRepo)
 	authHandler := handler.NewAuthHandler(authSvc)
 	counterHandler := handler.NewCounterHandler(counterRepo)
+	userHandler := handler.NewUserHandler(userSvc)
 
 	// 路由
-	r := router.Setup(authHandler, counterHandler, cfg.JWT.Secret)
+	r := router.Setup(authHandler, counterHandler, userHandler, cfg.JWT.Secret)
 
 	log.Printf("server running on :%s", cfg.Server.Port)
 	if err := r.Run(":" + cfg.Server.Port); err != nil {
