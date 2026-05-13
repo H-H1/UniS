@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"uniS/pkg/logger"
 )
 
 type Config struct {
@@ -31,7 +32,16 @@ type JWTConfig struct {
 
 // Load 加载配置
 func Load() *Config {
+	appid := getEnv("WX_APP_ID", "wxa653960621255b47")
+	appSecret := getEnv("WX_APP_SECRET", "")
+	jwt := getEnv("WX_APP_SECRET", "")
+	logger.Info("getEnv", "", map[string]any{
+		"appid":     appid,
+		"appsecret": appSecret,
+		"jwt":       jwt,
+	})
 	return &Config{
+
 		Server: ServerConfig{
 			Port: getEnv("SERVER_PORT", "8099"),
 		},
@@ -39,11 +49,11 @@ func Load() *Config {
 			DSN: buildDSN(),
 		},
 		WeChat: WeChatConfig{
-			AppID:     getEnv("WX_APP_ID", "wxa653960621255b47"),
-			AppSecret: getEnv("WX_APP_SECRET", "4965013f23337ae6b6ccf89451f3595c"),
+			AppID:     appid,
+			AppSecret: appSecret,
 		},
 		JWT: JWTConfig{
-			Secret: getEnv("JWT_SECRET", "change-uniS-s"),
+			Secret: jwt,
 		},
 	}
 }
