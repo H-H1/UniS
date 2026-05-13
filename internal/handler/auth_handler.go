@@ -22,10 +22,12 @@ func (h *AuthHandler) WxLogin(c *gin.Context) {
 	var req service.WxLoginReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		logger.Error("auth_handler", "请求参数绑定失败", map[string]any{
-			"client_ip": c.ClientIP(),
-			"error":     err.Error(),
+			"client_ip":    c.ClientIP(),
+			"method":       c.Request.Method,
+			"content_type": c.ContentType(),
+			"error":        err.Error(),
 		})
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request body"})
 		return
 	}
 
@@ -44,7 +46,12 @@ func (h *AuthHandler) WxLogin(c *gin.Context) {
 			"nick_name": req.NickName,
 			"error":     err.Error(),
 		})
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": err.Error()})
+		// 微信返回的 invalid code 是客户端错误，用 400 而不是 500
+		status := http.StatusInternalServerError
+		if err.Error() == "wx error 40029: invalid code" {
+			status = http.StatusBadRequest
+		}
+		c.JSON(status, gin.H{"code": status, "msg": err.Error()})
 		return
 	}
 

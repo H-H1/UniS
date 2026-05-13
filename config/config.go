@@ -39,7 +39,7 @@ func Load() *Config {
 			DSN: buildDSN(),
 		},
 		WeChat: WeChatConfig{
-			AppID:     getEnv("WX_APP_ID", "wx6445e83e8e9c9885"),
+			AppID:     getEnv("WX_APP_ID", "wxa653960621255b47"),
 			AppSecret: getEnv("WX_APP_SECRET", "4965013f23337ae6b6ccf89451f3595c"),
 		},
 		JWT: JWTConfig{

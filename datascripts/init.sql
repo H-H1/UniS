@@ -59,3 +59,26 @@ CREATE TABLE IF NOT EXISTS `counters` (
   COMMENT='游客访问计数器表（每10分钟一条增量记录）';
 
 -- 查询总访问量示例：SELECT SUM(count) FROM counters WHERE url = '/counter';
+
+-- ------------------------------------------------------------
+-- 测试结果表
+-- 存储用户提交的测试答案和分数，scores/answer_details 为 JSON 类型
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `test_results` (
+  `id`              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `created_at`      DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3)                                COMMENT '创建时间',
+  
+  `user_id`         BIGINT UNSIGNED NOT NULL                               COMMENT '用户 ID（关联 users.id）',
+  `scores`          JSON            NOT NULL                               COMMENT '各类型分数，如 {"1":18,"2":12}',
+  `answer_details`  JSON            NOT NULL                               COMMENT '答题详情数组',
+  `total_questions` INT             NOT NULL                               COMMENT '总题数',
+  `answered_count`  INT             NOT NULL                               COMMENT '已答题数',
+  `timestamp`       BIGINT          NOT NULL                               COMMENT '前端提交时间戳（毫秒）',
+
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='测试结果表';
