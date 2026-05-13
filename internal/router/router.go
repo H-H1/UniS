@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(authHandler *handler.AuthHandler, counterHandler *handler.CounterHandler, userHandler *handler.UserHandler, jwtSecret string) *gin.Engine {
+func Setup(authHandler *handler.AuthHandler, counterHandler *handler.CounterHandler, userHandler *handler.UserHandler, testHandler *handler.TestHandler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 
 	// 公开路由（无需登录）
@@ -20,7 +20,7 @@ func Setup(authHandler *handler.AuthHandler, counterHandler *handler.CounterHand
 	r.GET("/counter", counterHandler.GetCounter)
 
 	// 需要鉴权的路由
-	api := r.Group("/api", middleware.JWTAuth(jwtSecret))
+	api := r.Group("/", middleware.JWTAuth(jwtSecret))
 	{
 		api.GET("/me", func(c *gin.Context) {
 			c.JSON(200, gin.H{
@@ -34,6 +34,14 @@ func Setup(authHandler *handler.AuthHandler, counterHandler *handler.CounterHand
 		{
 			user.POST("/profile", userHandler.UpdateProfile) // 更新昵称/头像URL
 			user.POST("/avatar", userHandler.UploadAvatar)   // 上传头像文件
+		}
+
+		// 测试相关
+		test := api.Group("/test")
+		{
+			test.POST("/submit", testHandler.SubmitTest)
+			test.GET("/history", testHandler.GetTestHistory)
+			test.GET("/:id", testHandler.GetTestResult)
 		}
 	}
 

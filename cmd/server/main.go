@@ -22,16 +22,22 @@ func main() {
 
 	// 依赖注入（手动 DI，简单清晰）
 	wxClient := wechat.NewClient(cfg.WeChat.AppID, cfg.WeChat.AppSecret)
+
 	userRepo := repository.NewUserRepository(db)
 	counterRepo := repository.NewCounterRepository(db)
+	testResultRepo := repository.NewTestResultRepository(db)
+
 	authSvc := service.NewAuthService(wxClient, userRepo, cfg.JWT.Secret)
 	userSvc := service.NewUserService(userRepo)
+	testSvc := service.NewTestService(testResultRepo)
+
 	authHandler := handler.NewAuthHandler(authSvc)
 	counterHandler := handler.NewCounterHandler(counterRepo)
 	userHandler := handler.NewUserHandler(userSvc)
+	testHandler := handler.NewTestHandler(testSvc)
 
 	// 路由
-	r := router.Setup(authHandler, counterHandler, userHandler, cfg.JWT.Secret)
+	r := router.Setup(authHandler, counterHandler, userHandler, testHandler, cfg.JWT.Secret)
 
 	log.Printf("server running on :%s", cfg.Server.Port)
 	if err := r.Run(":" + cfg.Server.Port); err != nil {
