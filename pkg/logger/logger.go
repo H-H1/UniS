@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -49,6 +51,19 @@ func rotate() {
 	logger = log.New(mw, "", 0)
 }
 
+// callerInfo 返回调用者的文件名和行号，格式为 "file.go:123"。
+func callerInfo(skip int) string {
+	_, file, line, ok := runtime.Caller(skip)
+	if !ok {
+		return "???:0"
+	}
+	// 只保留文件名，去掉路径
+	if idx := strings.LastIndex(file, "/"); idx >= 0 {
+		file = file[idx+1:]
+	}
+	return fmt.Sprintf("%s:%d", file, line)
+}
+
 // write 是所有级别的底层写入函数。
 func write(level, module, msg string, fields map[string]any) {
 	mu.Lock()
@@ -56,7 +71,8 @@ func write(level, module, msg string, fields map[string]any) {
 	rotate()
 
 	now := time.Now().Format("2006-01-02 15:04:05.000")
-	line := fmt.Sprintf("[%s] [%s] [%s] %s", now, level, module, msg)
+	caller := callerInfo(3) // skip write → Info/Warn/Error → 用户调用
+	line := fmt.Sprintf("[%s] [%s] [%s] [%s] %s", now, level, module, caller, msg)
 	if len(fields) > 0 {
 		line += " |"
 		for k, v := range fields {
