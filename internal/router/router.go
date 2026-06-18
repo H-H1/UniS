@@ -14,7 +14,7 @@ func Setup(authHandler *handler.AuthHandler, counterHandler *handler.CounterHand
 	auth := r.Group("/auth")
 	{
 		auth.POST("/wx-login", authHandler.WxLogin)
-		auth.GET("/profile", authHandler.WxLogin)
+		auth.POST("/profile", authHandler.WxLogin)
 	}
 
 	// 游客计数器
