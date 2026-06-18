@@ -10,9 +10,9 @@ import (
 )
 
 type WxLoginReq struct {
-	Code      string `json:"code"` // 本地开发用：wx.login() 获取的 code（云托管时不需要）
-	OpenID    string `json:"-"`    // 云托管：由 X-WX-OPENID 请求头注入，handler 中赋值
-	UnionID   string `json:"-"`    // 云托管：由 X-WX-UNIONID 请求头注入，handler 中赋值
+	Code      string `json:"code,omitempty"` // 本地开发用：wx.login() 获取的 code（云托管时不需要）
+	OpenID    string `json:"-"`              // 云托管：由 X-WX-OPENID 请求头注入，handler 中赋值
+	UnionID   string `json:"-"`              // 云托管：由 X-WX-UNIONID 请求头注入，handler 中赋值
 	NickName  string `json:"nickName"`
 	AvatarURL string `json:"avatarUrl"`
 	Gender    int    `json:"gender"`
