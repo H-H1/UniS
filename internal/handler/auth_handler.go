@@ -36,11 +36,11 @@ func (h *AuthHandler) WxLogin(c *gin.Context) {
 	req.UnionID = c.GetHeader("X-WX-UNIONID")
 
 	logger.Info("auth_handler", "收到 WxLogin 请求", map[string]any{
-		"client_ip": c.ClientIP(),
-		"nick_name": req.NickName,
-		"country":   req.Country,
-		"province":  req.Province,
-		"city":      req.City,
+		"client_ip":  c.ClientIP(),
+		"nick_name":  req.NickName,
+		"country":    req.Country,
+		"province":   req.Province,
+		"city":       req.City,
 		"from_cloud": req.OpenID != "",
 	})
 
