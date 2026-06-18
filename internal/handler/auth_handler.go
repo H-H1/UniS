@@ -31,12 +31,17 @@ func (h *AuthHandler) WxLogin(c *gin.Context) {
 		return
 	}
 
+	// 云托管：微信平台自动注入 X-WX-OPENID / X-WX-UNIONID 请求头
+	req.OpenID = c.GetHeader("X-WX-OPENID")
+	req.UnionID = c.GetHeader("X-WX-UNIONID")
+
 	logger.Info("auth_handler", "收到 WxLogin 请求", map[string]any{
 		"client_ip": c.ClientIP(),
 		"nick_name": req.NickName,
 		"country":   req.Country,
 		"province":  req.Province,
 		"city":      req.City,
+		"from_cloud": req.OpenID != "",
 	})
 
 	resp, err := h.authSvc.WxLogin(&req)
